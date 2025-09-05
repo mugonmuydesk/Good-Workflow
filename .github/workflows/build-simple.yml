@@ -1,0 +1,126 @@
+name: Simple Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+      
+      - name: Create stub Windows executable
+        shell: cmd
+        run: |
+          echo #include ^<iostream^> > main.cpp
+          echo int main() { >> main.cpp
+          echo     std::cout ^<^< "CodeMap v1.0.2 - Windows Build" ^<^< std::endl; >> main.cpp
+          echo     std::cout ^<^< "Full functionality requires libclang." ^<^< std::endl; >> main.cpp
+          echo     std::cout ^<^< "Use WSL for full features or wait for next release." ^<^< std::endl; >> main.cpp
+          echo     return 0; >> main.cpp
+          echo } >> main.cpp
+          
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          cl.exe /EHsc /Fe:codemap.exe main.cpp
+          
+      - name: Package Windows Release
+        run: |
+          New-Item -ItemType Directory -Force -Path release-windows
+          Copy-Item codemap.exe release-windows\
+          Copy-Item README.md release-windows\
+          
+          # Create zip archive
+          Compress-Archive -Path release-windows\* -DestinationPath codemap-windows-x64.zip
+          
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codemap-windows-x64
+          path: codemap-windows-x64.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libclang-18-dev llvm-18-dev
+          
+      - name: Configure CMake
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+        
+      - name: Build
+        run: cmake --build build -j$(nproc)
+        
+      - name: Package Linux Release
+        run: |
+          mkdir -p release-linux/codemap-linux-x64
+          cp build/bin/codemap release-linux/codemap-linux-x64/
+          cp -r frontend release-linux/codemap-linux-x64/
+          cp README.md release-linux/codemap-linux-x64/
+          cd release-linux
+          tar -czf ../codemap-linux-x64.tar.gz codemap-linux-x64
+          cd ..
+          
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codemap-linux-x64
+          path: codemap-linux-x64.tar.gz
+
+  create-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: codemap-windows-x64
+          
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: codemap-linux-x64
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            codemap-windows-x64.zip
+            codemap-linux-x64.tar.gz
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            ## Download
+            
+            ### Windows
+            Download `codemap-windows-x64.zip` and extract. Run `codemap.exe` from the command line.
+            **Note**: Windows build is currently a stub. Full functionality available in WSL or Linux.
+            
+            ### Linux
+            Download `codemap-linux-x64.tar.gz` and extract:
+            ```bash
+            tar -xzf codemap-linux-x64.tar.gz
+            cd codemap-linux-x64
+            ./codemap --help
+            ```

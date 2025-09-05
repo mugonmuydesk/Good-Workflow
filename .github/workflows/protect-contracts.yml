@@ -1,0 +1,110 @@
+name: Protect Contracts and Tests
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  push:
+    branches: [ main, master ]
+
+jobs:
+  check-protected:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for proper diff
+      
+      - name: Check for protected contract/test modifications
+        run: |
+          echo "🔍 Checking for modifications to protected contracts and tests..."
+          
+          # Get the base branch (main or master)
+          if git show-ref --verify --quiet refs/remotes/origin/main; then
+            BASE_BRANCH="origin/main"
+          elif git show-ref --verify --quiet refs/remotes/origin/master; then
+            BASE_BRANCH="origin/master"
+          else
+            echo "ℹ️ No main/master branch found. Skipping check for initial commits."
+            exit 0
+          fi
+          
+          # Get list of modified files
+          MODIFIED_FILES=$(git diff --name-only $BASE_BRANCH...HEAD || true)
+          
+          if [ -z "$MODIFIED_FILES" ]; then
+            echo "✅ No files modified."
+            exit 0
+          fi
+          
+          # Check if any protected files were modified
+          PROTECTED_MODIFIED=false
+          
+          for file in $MODIFIED_FILES; do
+            # Check if file is in include/ or tests/ directory
+            if [[ "$file" == include/*.h ]] || [[ "$file" == tests/*.cpp ]]; then
+              # Check if the file contains protected markers
+              if [ -f "$file" ]; then
+                if grep -q "// PROTECTED CONTRACT" "$file" 2>/dev/null || grep -q "// PROTECTED TEST" "$file" 2>/dev/null; then
+                  echo "❌ ERROR: Protected file modified: $file"
+                  echo "   This file contains PROTECTED CONTRACT or PROTECTED TEST marker."
+                  echo "   Protected contracts and tests are immutable and cannot be modified."
+                  PROTECTED_MODIFIED=true
+                fi
+              fi
+            fi
+          done
+          
+          if [ "$PROTECTED_MODIFIED" = true ]; then
+            echo ""
+            echo "❌ Build failed: Protected contracts or tests were modified."
+            echo "📚 Please review the Development Plan for the contract protection policy."
+            echo "💡 Only implementation files in src/ can be modified."
+            exit 1
+          else
+            echo "✅ No protected contracts or tests were modified."
+          fi
+      
+      - name: Verify protection markers exist
+        run: |
+          echo "🔍 Verifying protection markers are in place..."
+          
+          # Check for header files without protection markers
+          UNPROTECTED_HEADERS=""
+          if [ -d "include" ]; then
+            for file in include/*.h; do
+              if [ -f "$file" ]; then
+                if ! grep -q "// PROTECTED CONTRACT" "$file" 2>/dev/null; then
+                  UNPROTECTED_HEADERS="$UNPROTECTED_HEADERS\n  - $file"
+                fi
+              fi
+            done
+          fi
+          
+          # Check for test files without protection markers
+          UNPROTECTED_TESTS=""
+          if [ -d "tests" ]; then
+            for file in tests/*.cpp; do
+              if [ -f "$file" ]; then
+                if ! grep -q "// PROTECTED TEST" "$file" 2>/dev/null; then
+                  UNPROTECTED_TESTS="$UNPROTECTED_TESTS\n  - $file"
+                fi
+              fi
+            done
+          fi
+          
+          # Report findings
+          if [ -n "$UNPROTECTED_HEADERS" ] || [ -n "$UNPROTECTED_TESTS" ]; then
+            echo "⚠️ Warning: Some files are missing protection markers:"
+            if [ -n "$UNPROTECTED_HEADERS" ]; then
+              echo -e "\nUnprotected header files:$UNPROTECTED_HEADERS"
+            fi
+            if [ -n "$UNPROTECTED_TESTS" ]; then
+              echo -e "\nUnprotected test files:$UNPROTECTED_TESTS"
+            fi
+            echo ""
+            echo "ℹ️ Consider adding protection markers to lock these contracts/tests."
+          else
+            echo "✅ All contracts and tests have protection markers."
+          fi
