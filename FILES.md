@@ -3,195 +3,205 @@
 ## 📚 Related Documentation
 
 Before making any changes, read these documents in order:
-1. **[`context.md`](/mnt/c/dev/CodeMap/Repo/context.md)** - MANDATORY: Lists all required reading
-2. **[`README.md`](/mnt/c/dev/CodeMap/Repo/README.md)** - Project overview
-3. **[`DEVELOPMENT_PLAN.md`](/mnt/c/dev/CodeMap/Repo/DEVELOPMENT_PLAN.md)** - Development workflow
-4. **[`FILES.md`](/mnt/c/dev/CodeMap/Repo/FILES.md)** - This file: complete file index
+1. **[`context.md`](context.md)** - Current project state and requirements
+2. **[`README.md`](README.md)** - Project overview and methodology
+3. **[`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md)** - Development workflow
+4. **[`FILES.md`](FILES.md)** - This file: complete file structure
 
-## Header Files (Protected Contracts)
+## Project Structure
 
-- `include/codemap_types.h`  
-  Core data structures for function graph representation.  
-  Defines: `FunctionNode`, `FunctionGraph`, `CallInfo`, `NodeStatus`.  
-  Used by: All other headers and implementation files.
+### Header Files (Protected Contracts)
+Location: `include/`
 
-- `include/parser.h`  
-  Parser interface and C++ parser class declaration.  
-  Defines: `IParser` (interface), `CppParser` (concrete implementation).  
-  Dependencies: `codemap_types.h`.  
-  Used by: `graph_builder.h`, future parser implementations.
+Protected headers contain the immutable contracts that define your project's interfaces. Once marked with `// PROTECTED CONTRACT`, these files cannot be modified.
 
-- `include/graph_builder.h`  
-  Orchestrates parsing and graph construction from source projects.  
-  Defines: `GraphBuilder`.  
-  Dependencies: `codemap_types.h`, `parser.h`.  
-  Used by: Main application (future).
+**Example Structure:**
+- `include/[feature].h` - Interface definitions
+- `include/[data_types].h` - Core data structures
+- `include/[service].h` - Service interfaces
 
-- `include/json_exporter.h`  
-  JSON serialization and deserialization for function graphs.  
-  Defines: `JSONExporter`.  
-  Dependencies: `codemap_types.h`.  
-  Used by: `graph_builder.h`, frontend visualization (future).
+**Template Available:**
+- `include/example_contract.h.template` - Example showing the pattern
 
-- `include/webview_app.h` *(Created in Phase 4 - PROTECTED)*  
-  WebviewApp interface for frontend visualization.  
-  Defines: `WebviewApp`, `IWebviewBridge`.  
-  Dependencies: `codemap_types.h`, `graph_builder.h`.  
-  Used by: Main application.
+### Implementation Files (Modifiable)
+Location: `src/`
 
-## Implementation Files
+Implementation files contain the actual code that fulfills the contracts. These are the only files that can be modified after protection is enabled.
 
-- `src/codemap_types.cpp`  
-  Implementation of core data structure methods and utilities.  
-  Implements: `FunctionGraph` methods (addNode, addCall, findNodeByName, etc.).  
-  Dependencies: `codemap_types.h`.
+**Example Structure:**
+- `src/[feature].cpp` - Feature implementation
+- `src/[service].cpp` - Service implementation
+- `src/[helpers].cpp` - Utility functions
 
-- `src/json_exporter.cpp`  
-  JSON export/import functionality for function graphs.  
-  Implements: `JSONExporter::exportGraph`, `JSONExporter::importGraph`.  
-  Dependencies: `json_exporter.h`, `codemap_types.h`.
+**Template Available:**
+- `src/example_implementation.cpp.template` - Example implementation
 
-- `src/parser.cpp` *(Implemented in Phase 2)*  
-  C++ parser implementation using libclang for function extraction.  
-  Implements: `CppParser` methods (parseFile, parseProject, getSupportedExtensions).  
-  Dependencies: `parser.h`, `codemap_types.h`, libclang-18.  
-  Features: Function detection, call graph extraction, stub/missing/external detection.
+### Test Files (Protected Tests)
+Location: `tests/`
 
-- `src/graph_builder.cpp` *(Implemented in Phase 3)*  
-  Graph construction and analysis from parsed source files.  
-  Implements: `GraphBuilder` methods (buildFromProject, toJSON, loadFromJSON, file I/O).  
-  Dependencies: `graph_builder.h`, `parser.h`, `json_exporter.h`.  
-  Features: Missing function resolution, stub detection, graph validation.
+Test files verify that implementations correctly fulfill the contracts. Once marked with `// PROTECTED TEST`, these files ensure implementation quality.
 
-- `src/webview_app_simple.cpp` *(Implemented in Phase 4)*  
-  Simplified webview application implementation.  
-  Implements: `WebviewApp` methods without native webview dependency.  
-  Dependencies: `webview_app.h`, `json_exporter.h`, filesystem.  
-  Features: Graph export to JSON, HTML visualization instructions.
+**Example Structure:**
+- `tests/test_[feature].cpp` - Feature tests
+- `tests/test_[service].cpp` - Service tests
+- `tests/test_integration.cpp` - Integration tests
 
-- `src/main.cpp` *(Implemented in Phase 4)*  
-  Main application entry point.  
-  Features: Command-line interface, demo mode, project analysis, JSON loading.  
-  Dependencies: `webview_app.h`, `graph_builder.h`, `json_exporter.h`.
+**Template Available:**
+- `tests/test_example.cpp.template` - Example test structure
 
-## Test Files (Protected Tests)
+### Build Configuration
+Location: Project root
 
-- `tests/test_codemap_types.cpp`  
-  Comprehensive unit tests for core data structures.  
-  Tests: FunctionNode creation, FunctionGraph operations, call relationships.  
-  Dependencies: `codemap_types.h`.
+- `CMakeLists.txt` - CMake build configuration
+- `run_tests.sh` - Linux/Mac test runner script
+- `run_tests.bat` - Windows test runner script
+- `Makefile` (optional) - Alternative build system
 
-- `tests/test_json_exporter.cpp`  
-  Tests for JSON serialization and deserialization.  
-  Tests: Export format, import validation, round-trip consistency.  
-  Dependencies: `json_exporter.h`, `codemap_types.h`.
+### GitHub Actions
+Location: `.github/workflows/`
 
-- `tests/test_parser.cpp` *(Created in Phase 2 - PROTECTED)*  
-  Comprehensive tests for C++ parser functionality.  
-  Tests: Function detection, call extraction, file/project parsing, edge cases.  
-  Dependencies: `parser.h`, `codemap_types.h`, `json_exporter.h`.  
-  Test count: 12 test functions covering all parser methods.
+- `protect-contracts.yml` - Enforces protection rules
+- `build.yml` (optional) - Automated builds
+- `test.yml` (optional) - Automated testing
 
-- `tests/test_graph_builder.cpp` *(Created in Phase 3 - PROTECTED)*  
-  Comprehensive tests for GraphBuilder functionality.  
-  Tests: Graph construction, JSON serialization, file I/O, missing/stub detection.  
-  Dependencies: `graph_builder.h`, `json_exporter.h`, `codemap_types.h`.  
-  Test count: 15 test functions covering graph building and analysis.
+### Documentation
+Location: Project root
 
-## Build Configuration
+- **[`README.md`](README.md)**  
+  Main project documentation  
+  Purpose: Overview, features, usage instructions
 
-- `CMakeLists.txt`  
-  CMake build configuration for the project.  
-  Defines: Build targets, test executables, compiler settings.  
-  Creates: `codemap_core` library, test executables.
+- **[`DEVELOPMENT_PLAN.md`](DEVELOPMENT_PLAN.md)**  
+  Workflow and methodology guide  
+  Purpose: Step-by-step development process
 
-- `run_tests.bat`  
-  Windows batch script for building and running all tests.  
-  Functions: Clean build, compile tests, execute test suite.  
-  Platform: Windows/cmd.exe.
+- **[`context.md`](context.md)**  
+  Project state tracking  
+  Purpose: Current status, objectives, progress
 
-- `run_tests.sh`  
-  Linux/WSL shell script for building and running all tests.  
-  Functions: Clean build, compile tests, execute test suite.  
-  Platform: Linux/WSL/bash.
+- **[`FILES.md`](FILES.md)** (This file)  
+  File structure documentation  
+  Purpose: Understanding project organization
 
-## Frontend Files (Phase 4)
+- **[`SETUP.md`](SETUP.md)**  
+  Initial configuration guide  
+  Purpose: Getting started with the template
 
-- `frontend/index.html`  
-  Main HTML page for the visualization interface.  
-  Features: Controls toolbar, graph container, sidebar, legend.  
-  Dependencies: Cytoscape.js (CDN), styles.css, app.js.
+## Directory Layout
 
-- `frontend/styles.css`  
-  Dark theme styling for the visualization interface.  
-  Features: Modern dark theme, responsive layout, interactive elements.  
-  Components: Header controls, graph container, sidebar, legend.
+```
+your-project/
+├── include/                      # Protected contract headers
+│   ├── example_contract.h.template  # Template to copy
+│   └── *.h                      # Your interface files
+│
+├── src/                         # Modifiable implementations
+│   ├── example_implementation.cpp.template  # Template
+│   └── *.cpp                    # Your implementation files
+│
+├── tests/                       # Protected test suites
+│   ├── test_example.cpp.template   # Template
+│   └── test_*.cpp               # Your test files
+│
+├── build/                       # Build output (git-ignored)
+│   └── [build artifacts]
+│
+├── .github/
+│   └── workflows/
+│       ├── protect-contracts.yml   # Contract protection
+│       └── [other workflows]
+│
+├── docs/                        # Additional documentation (optional)
+│   └── [design docs, API docs, etc.]
+│
+├── scripts/                     # Utility scripts (optional)
+│   └── [helper scripts]
+│
+├── CMakeLists.txt              # Build configuration
+├── run_tests.sh                # Test runner (Linux/Mac)
+├── run_tests.bat               # Test runner (Windows)
+├── .gitignore                  # Git ignore patterns
+├── README.md                   # Project overview
+├── DEVELOPMENT_PLAN.md         # Workflow guide
+├── FILES.md                    # This file
+├── context.md                  # Project state
+└── SETUP.md                    # Setup instructions
+```
 
-- `frontend/app.js`  
-  JavaScript application for interactive graph visualization.  
-  Dependencies: Cytoscape.js library.  
-  Features: Graph rendering, layouts, filtering, node selection, export.
+## File Naming Conventions
 
-## Documentation
+### Headers (include/)
+- `i[name].h` - Interfaces (e.g., `iservice.h`)
+- `[name]_types.h` - Type definitions
+- `[name].h` - Class declarations
 
-- **[`README.md`](/mnt/c/dev/CodeMap/Repo/README.md)**  
-  Main project documentation with features, build instructions, and usage.  
-  Contains: Project overview, build steps, architecture, contribution guidelines.  
-  References: Links to DEVELOPMENT_PLAN.md, FILES.md, context.md.  
-  Audience: Users and contributors.
+### Source (src/)
+- `[name].cpp` - Implementation files
+- `[name]_impl.cpp` - Alternative naming
+- `[name]_helpers.cpp` - Utility functions
 
-- **[`DEVELOPMENT_PLAN.md`](/mnt/c/dev/CodeMap/Repo/DEVELOPMENT_PLAN.md)**  
-  Detailed development workflow and implementation phases.  
-  Contains: Strict workflow rules, architecture design, phase breakdown.  
-  References: Links to README.md, FILES.md, context.md.  
-  Audience: Developers implementing features.
+### Tests (tests/)
+- `test_[name].cpp` - Unit tests
+- `test_integration_[name].cpp` - Integration tests
+- `benchmark_[name].cpp` - Performance tests
 
-- **[`context.md`](/mnt/c/dev/CodeMap/Repo/context.md)** *(MANDATORY STARTING POINT)*  
-  Current project state and progress tracking.  
-  Contains: Required reading list, completed phases, current work, protection status.  
-  References: Links to all other documentation with mandatory reading notice.  
-  Purpose: Recovery context for development continuity.
+## Protection Markers
 
-- **[`FILES.md`](/mnt/c/dev/CodeMap/Repo/FILES.md)** *(This file)*  
-  Complete index of all project files and their purposes.  
-  Contains: File descriptions, key definitions, dependencies, cross-references.  
-  References: Links to all documentation files.  
-  Purpose: Quick reference for project structure.
+### Contract Protection
+```cpp
+// PROTECTED CONTRACT: Do not edit except with explicit approval
+```
 
-## GitHub Actions
+### Test Protection
+```cpp
+// PROTECTED TEST: Do not modify after marking as protected
+```
 
-- `.github/workflows/protect-contracts.yml`  
-  Automated CI/CD workflow for contract protection.  
-  Functions: Checks for PROTECTED markers, blocks modifications.  
-  Triggers: Push events, pull requests.
+## Working with Templates
 
-- `.github/workflows/build-release.yml`  
-  Automated multi-platform build and release workflow.  
-  Functions: Builds Windows and Linux binaries, creates GitHub releases.  
-  Triggers: Version tags (v*), manual dispatch.  
-  Platforms: Windows (MSVC + LLVM), Linux (GCC + libclang).
+### Creating a New Contract
+```bash
+cp include/example_contract.h.template include/my_feature.h
+# Edit my_feature.h to define your interface
+# Add protection marker when ready
+```
 
-## Configuration Files
+### Creating a New Test
+```bash
+cp tests/test_example.cpp.template tests/test_my_feature.cpp
+# Edit test_my_feature.cpp to test your contract
+# Add protection marker when complete
+```
 
-- `.gitignore`  
-  Git ignore patterns for build artifacts and temporary files.  
-  Excludes: build/, *.exe, *.o, temp files, IDE configs.  
-  Purpose: Keep repository clean of generated files.
+### Creating Implementation
+```bash
+cp src/example_implementation.cpp.template src/my_feature.cpp
+# Edit my_feature.cpp to implement the contract
+# This file remains modifiable
+```
 
-## Directory Structure
+## Dependencies
 
-- `include/` - Protected contract headers (immutable interfaces)
-- `src/` - Implementation files (modifiable)
-- `tests/` - Protected test files (immutable tests)
-- `build/` - Build output directory (not in repo)
-- `docs/` - Additional documentation (future)
-- `frontend/` - Web UI visualization (future Phase 4)
-- `.github/` - GitHub Actions workflows
+Document your project's dependencies here:
 
-## External Dependencies
+### Build Dependencies
+- CMake 3.10+ (or your build system)
+- C++17 compiler (or your language/version)
+- [Other build requirements]
 
-- **CMake 3.10+** - Build system
-- **C++17 compiler** - Language standard
-- **libclang** - C++ parsing (Phase 2)
-- **Webview** - UI framework (future Phase 4)
-- **Cytoscape.js/vis.js** - Graph visualization (future Phase 4)
+### Runtime Dependencies
+- [Library 1] - Purpose
+- [Library 2] - Purpose
+
+### Development Dependencies
+- Testing framework (if not built-in)
+- Documentation generator (optional)
+- Code formatter (optional)
+
+## Notes
+
+- Only files in `src/` can be modified after protection
+- Protected files require explicit approval to change
+- Templates are provided as `.template` files
+- Build output should be git-ignored
+- Keep documentation up-to-date with changes

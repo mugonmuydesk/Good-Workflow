@@ -1,0 +1,44 @@
+// PROTECTED CONTRACT: Do not edit except with explicit approval
+// This is an example contract header file showing the workflow pattern
+// Rename to .h and customize for your project
+
+#ifndef EXAMPLE_CONTRACT_H
+#define EXAMPLE_CONTRACT_H
+
+#include <string>
+#include <vector>
+
+// Example: Define your core data structures
+struct ExampleData {
+    std::string name;
+    int value;
+    bool isValid;
+};
+
+// Example: Define your interfaces
+class IExampleService {
+public:
+    virtual ~IExampleService() = default;
+    
+    // Pure virtual methods define the contract
+    virtual bool process(const ExampleData& data) = 0;
+    virtual std::vector<ExampleData> getResults() const = 0;
+    virtual void reset() = 0;
+};
+
+// Example: Concrete class declaration (implementation goes in src/)
+class ExampleServiceImpl : public IExampleService {
+private:
+    std::vector<ExampleData> m_results;
+    
+public:
+    // These declarations form the contract
+    bool process(const ExampleData& data) override;
+    std::vector<ExampleData> getResults() const override;
+    void reset() override;
+    
+    // Additional public methods
+    size_t getProcessedCount() const;
+};
+
+#endif // EXAMPLE_CONTRACT_H

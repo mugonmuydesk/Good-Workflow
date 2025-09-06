@@ -16,7 +16,16 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for proper diff
       
+      - name: Check if protection is temporarily disabled
+        if: ${{ secrets.ALLOW_PROTECTED_EDITS == 'true' }}
+        run: |
+          echo "⚠️ WARNING: Contract protection is temporarily DISABLED"
+          echo "   Repository secret ALLOW_PROTECTED_EDITS is set to 'true'"
+          echo "   Protected files can be modified in this state"
+          echo "   Remember to remove or change this secret after completing necessary changes"
+      
       - name: Check for protected contract/test modifications
+        if: ${{ secrets.ALLOW_PROTECTED_EDITS != 'true' }}
         run: |
           echo "🔍 Checking for modifications to protected contracts and tests..."
           
@@ -67,6 +76,7 @@ jobs:
           fi
       
       - name: Verify protection markers exist
+        if: ${{ secrets.ALLOW_PROTECTED_EDITS != 'true' }}
         run: |
           echo "🔍 Verifying protection markers are in place..."
           

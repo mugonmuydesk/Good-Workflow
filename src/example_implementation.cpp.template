@@ -1,0 +1,30 @@
+// This is an example implementation file
+// This is where you implement the contracts defined in the headers
+// Only these implementation files can be modified after contracts are protected
+
+#include "../include/example_contract.h"
+#include <algorithm>
+
+// Implement the interface methods
+bool ExampleServiceImpl::process(const ExampleData& data) {
+    // Validate the data
+    if (data.name.empty() || data.value < 0 || !data.isValid) {
+        return false;
+    }
+    
+    // Process and store the data
+    m_results.push_back(data);
+    return true;
+}
+
+std::vector<ExampleData> ExampleServiceImpl::getResults() const {
+    return m_results;
+}
+
+void ExampleServiceImpl::reset() {
+    m_results.clear();
+}
+
+size_t ExampleServiceImpl::getProcessedCount() const {
+    return m_results.size();
+}

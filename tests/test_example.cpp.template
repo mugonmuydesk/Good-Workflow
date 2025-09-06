@@ -1,0 +1,87 @@
+// PROTECTED TEST: Do not modify after marking as protected
+// This is an example test file showing the workflow pattern
+// Rename to .cpp and customize for your project
+
+#include <iostream>
+#include <cassert>
+#include "../include/example_contract.h"
+
+// Test counter for reporting
+static int tests_run = 0;
+static int tests_passed = 0;
+
+// Helper macro for test assertions
+#define TEST_ASSERT(condition, message) \
+    do { \
+        tests_run++; \
+        if (!(condition)) { \
+            std::cerr << "Test failed: " << message << std::endl; \
+            std::cerr << "  at " << __FILE__ << ":" << __LINE__ << std::endl; \
+        } else { \
+            tests_passed++; \
+        } \
+    } while(0)
+
+// Example test functions
+void test_example_data_creation() {
+    ExampleData data{"test", 42, true};
+    TEST_ASSERT(data.name == "test", "ExampleData name should be 'test'");
+    TEST_ASSERT(data.value == 42, "ExampleData value should be 42");
+    TEST_ASSERT(data.isValid == true, "ExampleData should be valid");
+}
+
+void test_example_service_process() {
+    ExampleServiceImpl service;
+    ExampleData data{"item1", 100, true};
+    
+    bool result = service.process(data);
+    TEST_ASSERT(result == true, "Processing valid data should return true");
+    
+    auto results = service.getResults();
+    TEST_ASSERT(results.size() == 1, "Should have one result after processing");
+    TEST_ASSERT(results[0].name == "item1", "Result should have correct name");
+}
+
+void test_example_service_reset() {
+    ExampleServiceImpl service;
+    ExampleData data1{"item1", 100, true};
+    ExampleData data2{"item2", 200, true};
+    
+    service.process(data1);
+    service.process(data2);
+    TEST_ASSERT(service.getProcessedCount() == 2, "Should have processed 2 items");
+    
+    service.reset();
+    TEST_ASSERT(service.getResults().empty(), "Results should be empty after reset");
+    TEST_ASSERT(service.getProcessedCount() == 0, "Count should be 0 after reset");
+}
+
+void test_invalid_data_handling() {
+    ExampleServiceImpl service;
+    ExampleData invalidData{"", -1, false};
+    
+    bool result = service.process(invalidData);
+    TEST_ASSERT(result == false, "Processing invalid data should return false");
+    TEST_ASSERT(service.getResults().empty(), "No results for invalid data");
+}
+
+int main() {
+    std::cout << "Running Example Tests..." << std::endl;
+    
+    // Run all test functions
+    test_example_data_creation();
+    test_example_service_process();
+    test_example_service_reset();
+    test_invalid_data_handling();
+    
+    // Report results
+    std::cout << "\nTest Results: " << tests_passed << "/" << tests_run << " passed" << std::endl;
+    
+    if (tests_passed == tests_run) {
+        std::cout << "All tests passed!" << std::endl;
+        return 0;
+    } else {
+        std::cout << "Some tests failed!" << std::endl;
+        return 1;
+    }
+}

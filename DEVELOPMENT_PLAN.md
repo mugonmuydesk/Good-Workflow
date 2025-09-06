@@ -1,263 +1,240 @@
-# CodeMap – Development Plan
+# Development Plan – Contract-First Workflow
 
 ## 📚 Related Documentation
 
-- **[`README.md`](/mnt/c/dev/CodeMap/Repo/README.md)** - Project overview and features
-- **[`FILES.md`](/mnt/c/dev/CodeMap/Repo/FILES.md)** - Complete file index
-- **[`context.md`](/mnt/c/dev/CodeMap/Repo/context.md)** - Current project state
+- **[`README.md`](README.md)** - Project overview and methodology
+- **[`FILES.md`](FILES.md)** - File structure and organization
+- **[`context.md`](context.md)** - Current project state tracking
+- **[`SETUP.md`](SETUP.md)** - Initial setup instructions
+
+## Core Principles
+
+This workflow enforces:
+1. **Immutable Contracts** - Interfaces cannot change once protected
+2. **Test-Driven Development** - Tests written before implementation
+3. **Clear Boundaries** - Only implementation files can be modified
+4. **Automated Protection** - GitHub Actions enforce the rules
 
 ## Workflow (strict)
 
-Always work in:
-- `/mnt/c/dev/CodeMap/Repo` → permanent project files (pushed to GitHub)
-- `/mnt/c/dev/CodeMap/Scratch` → temporary files (never pushed/pulled)
+### Working Directories
+- **Project Root** → Permanent project files (pushed to GitHub)
+- **Scratch/Temp** → Temporary work files (never committed)
 
 ### Step Transition Protocol
-**IMPORTANT**: When progressing between workflow steps, always announce:
-1. **Previous Step Completed** - Quote the step number and text from DEVELOPMENT_PLAN.md
-2. **Current Step Starting** - Quote the step number and text from DEVELOPMENT_PLAN.md
-3. **Next Step Preview** - Quote the step number and text from DEVELOPMENT_PLAN.md
-
-Example transition announcements:
-
-```
-📋 Workflow Progress (from DEVELOPMENT_PLAN.md):
-✅ Completed Step 4: "Run tests" - All 73 tests passing
-🔄 Starting Step 5: "Address errors" - Fixing JsonExporter::jsonToGraph implementation
-⏭️ Next Step 6: "Iterate steps 1–5 until all tests pass."
-```
-
-Another example during documentation phase:
-```
-📋 Workflow Progress (from DEVELOPMENT_PLAN.md):
-✅ Completed Step 6: "Iterate steps 1–5 until all tests pass." - All tests now passing
-🔄 Starting Step 7: "Push to GitHub" - Committing and pushing Phase 3 implementation
-⏭️ Next Step 10: "Update documentation" - Will update FILES.md and context.md
-```
-
-Note: Always explicitly state these steps are from DEVELOPMENT_PLAN.md and include the exact step numbers.
+When progressing between workflow steps, always announce:
+1. **Previous Step Completed** - What was just finished
+2. **Current Step Starting** - What's being worked on now
+3. **Next Step Preview** - What comes next
 
 ### Critical Dependency Rule
-**NEVER alter the development plan because something isn't installed.** If a required dependency is missing:
-1. STOP immediately - do not create alternative implementations
-2. Ask the human user to install the missing dependency
-3. Provide the exact installation command(s) they need to run
-4. Wait for confirmation that the dependency is installed before proceeding
-5. The original plan and architecture must be followed - missing dependencies are not a reason to change the design
+**NEVER alter the development plan because something isn't installed.** 
+- STOP immediately if dependencies are missing
+- Ask for installation help
+- Wait for confirmation before proceeding
+- The plan must be followed exactly
 
-## Steps
+## The 10-Step Development Cycle
 
-1. **Add / change contracts and pseudocode**
-   - Contracts live in headers (`/mnt/c/dev/CodeMap/Repo/include/*.h`).
-   - Mark contract headers with:
-     ```cpp
-     // PROTECTED CONTRACT: Do not edit except with explicit approval
-     ```
-   - From this point, the header is locked.
-
-2. **Create tests for contracts**
-   - Tests live in `/mnt/c/dev/CodeMap/Repo/tests/`.
-   - Existing tests are protected (marked with `// PROTECTED TEST`).
-   - New test files may be added, but not modifications to protected ones.
-   - Provide/update `run_tests.bat` and `run_tests.sh`.
-
-3. **Add / change code**
-   - Implement in `/mnt/c/dev/CodeMap/Repo/src/*.cpp`.
-   - Helpers may include private `.h` files, but never alter protected contracts/tests.
-
-4. **Run tests**
-   ```bash
-   cd /mnt/c/dev/CodeMap/Repo
-   ./run_tests.sh    # WSL  
-   # or
-   cmd.exe /c run_tests.bat   # Windows
-   ```
-
-5. **Address errors**
-   - Fix `.cpp` implementations and internal helpers until all tests pass.
-
-6. **Iterate steps 1–5 until all tests pass.**
-
-6.5. **GitHub Actions contract enforcement**
-   - On every push and pull request, GitHub Actions checks whether protected files in `/mnt/c/dev/CodeMap/Repo/include/` or `/mnt/c/dev/CodeMap/Repo/tests/` contain the markers `// PROTECTED CONTRACT` or `// PROTECTED TEST`.
-   - If those markers appear in the diff, the job fails.
-   - A failed job blocks merging.
-   - This ensures contracts and tests remain immutable once marked as protected.
-
-7. **Push to GitHub**
-   - Push repo changes.
-   - Publish release with correct version tag.
-
-8. **Download .exe**
-   - Save to:
-     ```
-     /mnt/c/dev/Releases/CodeMap/<version>/
-     ```
-
-9. **Clear Scratch**
-   - Wipe `/mnt/c/dev/CodeMap/Scratch/`.
-
-10. **Update documentation**
-    - Update `/mnt/c/dev/CodeMap/Repo/FILES.md` with any new files or changes.
-    - Update `/mnt/c/dev/CodeMap/Repo/context.md` with current project state.
-    - Ensure all documentation cross-references are accurate.
-    - Push all documentation updates to GitHub.
-    - Suggest clearing context.
-
-## Architecture
-
-### 1. Core Components
-
-#### Parser
-- Extracts function definitions and calls.
-- Start: C++ with libclang.
-- Later: extend with tree-sitter for Python/JS.
-
-#### Graph Builder
-- Translates parser output into FunctionGraph.
-- Node = function, Edge = call.
-- Supports JSON export.
-
-#### Frontend (Webview)
-- C++ webview loads local HTML/JS.
-- Renders graph using Cytoscape.js (or vis.js).
-
-#### App Shell
-- C++ executable.
-- Controls scanning, graph building, JSON export, and frontend display.
-
-### 2. Development Order
-
-#### Phase 1: Skeleton & Contracts
-Define contracts in headers (`/mnt/c/dev/CodeMap/Repo/include/`):
-- Parser API:
+### 1. **Add/Change Contracts and Pseudocode**
+- Contracts live in headers (`include/*.h`)
+- Mark contract headers with:
   ```cpp
-  FunctionGraph parseProject(const std::string& path);
+  // PROTECTED CONTRACT: Do not edit except with explicit approval
   ```
-- Graph structure:
+- From this point, the header is locked
+- Define clear interfaces before implementation
+
+### 2. **Create Tests for Contracts**
+- Tests live in `tests/test_*.cpp`
+- Write comprehensive tests against the contracts
+- Mark test files with:
   ```cpp
-  struct FunctionNode {
-    std::string name;
-    std::string file;
-    int line;
-    bool isStub;
-    bool isMissing;
-    bool isExternal;
-  };
-  
-  struct FunctionGraph {
-    std::vector<FunctionNode> nodes;
-    std::vector<std::pair<int,int>> edges; // caller → callee (node indices)
-  };
+  // PROTECTED TEST: Do not modify after marking as protected
   ```
-- JSON export:
-  ```cpp
-  std::string toJSON(const FunctionGraph& graph);
-  ```
-- Frontend loader:
-  ```cpp
-  void loadGraph(const std::string& jsonString);
-  ```
+- Tests become immutable once marked
+- Provide test runner scripts (`run_tests.sh`, `run_tests.bat`)
 
-#### Phase 2: Parser (Backend)
-- Implement minimal C++ parser (libclang).
-- Detect functions + calls.
-- Mark missing callees.
+### 3. **Add/Change Code**
+- Implement in `src/*.cpp`
+- Can include private helper headers (not protected)
+- Never alter protected contracts or tests
+- Focus on making tests pass
 
-#### Phase 3: Graph Builder
-- Build FunctionGraph from parser output.
-- Add JSON exporter.
-- Unit test correctness.
+### 4. **Run Tests**
+```bash
+# Run your test suite
+./run_tests.sh        # Linux/Mac
+run_tests.bat         # Windows
+# Or use your build system's test command
+cmake --build . --target test
+```
 
-#### Phase 4: Frontend
-- Create C++ webview container.
-- Load HTML/JS with Cytoscape.
-- Render demo graph.
-- Hook up JSON input → render real graph.
+### 5. **Address Errors**
+- Fix implementation files only
+- Modify helpers and internals as needed
+- Cannot change contracts or tests to "fix" errors
+- Errors reveal implementation issues, not contract problems
 
-#### Phase 5: Highlighting & Interactivity
-- Node colours:
-  - Green = implemented
-  - Yellow = stub
-  - Red = missing
-  - Grey = external
-- Tooltip with file + line.
-- Click → highlight connected nodes.
+### 6. **Iterate Steps 1-5**
+- Repeat until all tests pass
+- Each iteration improves implementation
+- Contracts remain stable throughout
 
-#### Phase 6: Integration
-- Full pipeline:
-  Project → Parse → Graph → JSON → Webview → Visualisation.
+### 7. **Push to GitHub**
+- Commit your changes
+- Push to repository
+- GitHub Actions will verify protection rules
+- Failed protection checks block merging
 
-#### Phase 7: Packaging & Release
-- `.bat` and `.sh` for tests + build.
-- Push to GitHub with version tag.
-- Publish GitHub Release.
-- Download exe to `/mnt/c/dev/Releases/CodeMap/<version>/`.
-- Clear Scratch.
-- Update FILES.md with final file structure.
-- Update context.md with release status.
+### 8. **Release/Deploy** (Optional)
+- Tag versions appropriately
+- Build release artifacts
+- Deploy according to project needs
 
-## Automated CI/CD Process
+### 9. **Clear Scratch/Temp**
+- Clean temporary work directories
+- Remove build artifacts not needed
+- Keep repository clean
 
-### GitHub Actions Build Pipeline
+### 10. **Update Documentation**
+- Update `FILES.md` with any new files
+- Update `context.md` with current state
+- Ensure README reflects current features
+- Cross-reference documentation accurately
 
-CodeMap uses GitHub Actions for automated multi-platform builds and releases:
+## GitHub Actions Contract Enforcement
 
-#### Build Workflow (`build-release.yml`)
-Triggered on:
-- Version tags (`v*`)
-- Manual workflow dispatch (for testing)
+### How Protection Works
+1. On every push and pull request
+2. Actions check for `PROTECTED CONTRACT` and `PROTECTED TEST` markers
+3. If protected files are modified, the build fails
+4. Merging is blocked until protection violations are resolved
 
-#### Build Process:
-1. **Windows Build** (windows-latest runner)
-   - Installs MSVC and LLVM 18
-   - Builds with Visual Studio generator
-   - Packages codemap.exe with required DLLs
-   - Creates Windows zip archive
+### Protection Workflow File
+The `.github/workflows/protect-contracts.yml` file:
+- Runs on all pushes and PRs
+- Checks diffs for protected file modifications
+- Reports violations clearly
+- Ensures architectural integrity
+- Can be temporarily disabled via `ALLOW_PROTECTED_EDITS` secret
 
-2. **Linux Build** (ubuntu-latest runner)
-   - Installs libclang-18 and build tools
-   - Builds with GCC
-   - Runs test suite
-   - Creates Linux tar.gz archive
+### Protection Override Mechanism
+For exceptional cases where protected files must be modified:
 
-3. **Release Creation** (when tag is pushed)
-   - Downloads both platform artifacts
-   - Creates GitHub Release
-   - Attaches binaries for download
-   - Generates release notes automatically
+1. **Add Repository Secret**:
+   - Go to Settings → Secrets → Actions
+   - Add `ALLOW_PROTECTED_EDITS` with value `true`
+   
+2. **Make Changes**:
+   - Protection checks will be skipped
+   - Warning messages will appear in Actions logs
+   - All changes are still tracked in git history
+   
+3. **Re-enable Protection**:
+   - **CRITICAL**: Remove or change the secret immediately after merging
+   - Protection automatically resumes when secret ≠ `true`
 
-### Local vs CI Development
+⚠️ **Warning**: This override should only be used for:
+- Fixing critical contract design flaws
+- Major refactoring with team approval
+- Emergency patches that require interface changes
 
-#### Local Development
-- **Primary environment**: WSL2 or native Linux
-- **Build type**: Debug builds for development
-- **Testing**: Run tests locally with `./run_tests.sh`
-- **Quick iteration**: Fast compile-test cycles
+## Architecture Guidelines
 
-#### CI/CD Builds
-- **Platforms**: Windows and Linux automated builds
-- **Build type**: Release builds with optimizations
-- **Consistency**: Reproducible builds across platforms
-- **Distribution**: Automatic binary packaging
+### Contract Design
+- **Interfaces First**: Define behavior before implementation
+- **Clear Boundaries**: Separate what from how
+- **Minimal Surface**: Keep interfaces small and focused
+- **Future-Proof**: Design for extension, not modification
 
-### Benefits of CI/CD
-- **No cross-compilation needed**: Native builds on each platform
-- **Consistent releases**: Same build environment every time
-- **Automatic distribution**: Binaries available immediately on release
-- **Quality assurance**: Tests run before packaging
-- **Multi-platform support**: Windows and Linux from single codebase
+### Test Strategy
+- **Unit Tests**: Test individual components
+- **Integration Tests**: Test component interactions
+- **Contract Tests**: Verify interface compliance
+- **Edge Cases**: Test boundary conditions
 
-### 3. Testing Plan
+### Implementation Approach
+- **Single Responsibility**: Each class/function does one thing
+- **Dependency Injection**: Pass dependencies explicitly
+- **Error Handling**: Fail gracefully with clear messages
+- **Documentation**: Comment why, not what
 
-**Unit tests:**
-- Parser (functions + calls).
-- Graph builder (nodes/edges).
-- JSON export (valid, schema-correct).
+## Working with AI Assistants
 
-**Integration test:**
-- Sample project → graph matches expected nodes/edges.
+### Effective AI Collaboration
+1. **Provide Context**: Share `context.md` at session start
+2. **State Current Step**: Be explicit about workflow position
+3. **Enforce Boundaries**: Remind AI about protected files
+4. **Review Changes**: Verify AI respects protection rules
 
-**Automation:**
-- `run_tests.bat` (Windows).
-- `run_tests.sh` (WSL).
+### Example AI Instructions
+```
+We're using contract-first development.
+Current step: Step 3 (implementing code)
+Protected files: include/*.h and tests/*.cpp cannot be modified
+Task: Implement the service defined in include/my_service.h
+Make all tests in tests/test_my_service.cpp pass
+```
+
+## Common Patterns
+
+### Adding a New Feature
+1. Design the contract (new header or extend existing)
+2. Write comprehensive tests
+3. Mark both as protected
+4. Implement until tests pass
+5. Document the feature
+
+### Fixing a Bug
+1. Write a failing test that exposes the bug
+2. Mark test as protected
+3. Fix implementation until test passes
+4. Verify no regression in other tests
+
+### Refactoring
+1. Ensure comprehensive test coverage exists
+2. Mark tests as protected if not already
+3. Refactor implementation freely
+4. All tests must still pass
+
+## Troubleshooting
+
+### Protected File Violation
+- **Problem**: GitHub Actions blocking your PR
+- **Solution**: Revert changes to protected files
+- **Prevention**: Only modify files in `src/`
+
+### Contract Needs Change
+- **Problem**: Protected contract has a design flaw
+- **Solution**: Use the protection override mechanism
+- **Process**: 
+  1. Document the need for change
+  2. Get team approval
+  3. Set `ALLOW_PROTECTED_EDITS` secret to `true`
+  4. Make necessary changes
+  5. Remove or change the secret immediately after
+
+### Test Failures After Protection
+- **Problem**: Tests are failing but can't be modified
+- **Solution**: Fix the implementation, not the test
+- **Note**: Failing protected tests indicate implementation bugs
+
+## Best Practices
+
+1. **Protect Early**: Lock contracts before extensive implementation
+2. **Test Thoroughly**: Comprehensive tests prevent future issues
+3. **Document Decisions**: Record why contracts are designed as they are
+4. **Version Carefully**: Use semantic versioning for contract changes
+5. **Communicate Changes**: Announce any contract modifications clearly
+
+## Summary
+
+This workflow ensures:
+- **Stability**: Contracts don't change unexpectedly
+- **Quality**: Tests drive correct implementation
+- **Clarity**: Clear boundaries between interface and implementation
+- **Automation**: Rules enforced without manual review
+- **Scalability**: Works for small and large projects
+
+Follow these steps strictly for reliable, maintainable software development with AI assistance.

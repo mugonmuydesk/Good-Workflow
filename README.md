@@ -1,153 +1,193 @@
-# CodeMap
+# AI-Driven Contract-First Development Workflow
 
-[![Build Release](https://github.com/mugonmuydesk/CodeMap/actions/workflows/build-release.yml/badge.svg)](https://github.com/mugonmuydesk/CodeMap/actions)
-[![Protected Contracts](https://github.com/mugonmuydesk/CodeMap/actions/workflows/protect-contracts.yml/badge.svg)](https://github.com/mugonmuydesk/CodeMap/actions)
+[![Protected Contracts](https://github.com/[your-username]/[your-repo]/actions/workflows/protect-contracts.yml/badge.svg)](https://github.com/[your-username]/[your-repo]/actions)
 
-*A visual call graph generator that maps how your project's functions connect.*
+*A proven workflow template for AI-assisted software development with immutable contracts and test-driven implementation.*
 
-CodeMap scans your source files, finds functions, and shows how they call each other in an interactive graph. Each function appears as a box, and arrows show the flow of calls across files and modules. Missing, stubbed, or external calls are highlighted so you can spot wiring issues at a glance.
+## 🎯 What is This?
 
-## ✨ Features
+This repository provides a **battle-tested workflow** for developing software with AI assistance (like Claude, GPT-4, etc.) that ensures:
 
-- **Function call graph**: Visualize how functions connect across your project
-- **Cross-file mapping**: See calls within a file or across modules
-- **Stub & TODO detection**: Highlights unimplemented or placeholder functions
-- **Dead-end spotting**: Quickly find functions that never get called
-- **Interactive graph**: Zoom, pan, and filter by file or module
-- **Local app**: Runs with C++ and webview, no browser/server setup needed
+- **Contracts stay stable**: Once defined, interfaces cannot be accidentally modified
+- **Tests drive development**: Tests are written against contracts before implementation
+- **AI stays focused**: Clear boundaries prevent scope creep and maintain consistency
+- **Quality is enforced**: GitHub Actions automatically protect critical code
+
+## ✨ Key Features
+
+### Contract-First Development
+- Define interfaces and data structures first
+- Mark them as `PROTECTED CONTRACT` to lock them
+- AI and humans can only modify implementations, not contracts
+
+### Test-Driven Implementation
+- Write tests against contracts before implementing
+- Tests become `PROTECTED TEST` once complete
+- Implementation must satisfy existing tests
+
+### GitHub Actions Protection
+- Automatically blocks PRs that modify protected files
+- Ensures contracts and tests remain immutable
+- Maintains architectural integrity
+
+### Clear Workflow Steps
+- Structured 10-step development cycle
+- Explicit handoff points between planning and coding
+- Built-in documentation requirements
 
 ## 🚀 Getting Started
 
-### Download Pre-built Binaries
+### Quick Setup
 
-The easiest way to get started is to download pre-built binaries from the [Releases page](https://github.com/mugonmuydesk/CodeMap/releases):
+1. **Use this template** to create your new repository
+2. Clone your new repository
+3. Read the core documentation:
+   - `SETUP.md` - How to configure for your project
+   - `DEVELOPMENT_PLAN.md` - The development workflow
+   - `context.md` - Track your project state
 
-- **Windows x64**: `codemap-windows-x64.zip` - Includes codemap.exe and required DLLs
-- **Linux x64**: `codemap-linux-x64.tar.gz` - Includes codemap executable
+### First Steps
 
-### Building from Source
+1. **Define your project** in `context.md`
+2. **Create your first contract** using the example template:
+   ```bash
+   cp include/example_contract.h.template include/my_feature.h
+   ```
+3. **Mark it as protected** by adding the marker comment
+4. **Write tests** using the test template
+5. **Implement** in the `src/` directory
+6. **Run tests** to verify your implementation
 
-#### Prerequisites
-
-- C++17 (or later) compiler
-- CMake 3.12 or higher
-- libclang-18 (Linux) or LLVM 18 (Windows)
-- Webview library (optional, for native UI)
-
-#### Build
-
-```bash
-# Clone the repository
-git clone https://github.com/mugonmuydesk/CodeMap.git
-cd /mnt/c/dev/CodeMap/Repo
-
-# Create build directory
-mkdir build && cd build
-
-# Configure with CMake
-cmake ..
-
-# Build the project
-cmake --build .
-
-# Run tests (Windows)
-cd ..
-cmd.exe /c run_tests.bat
-
-# Run tests (Linux/WSL)
-./run_tests.sh
-```
-
-## 📁 Project Structure
+## 📁 Repository Structure
 
 ```
-/mnt/c/dev/CodeMap/Repo/
-├── include/                # Header files (PROTECTED CONTRACTS)
-│   ├── codemap_types.h    # Core data structures
-│   ├── parser.h           # Parser interface
-│   ├── graph_builder.h    # Graph builder
-│   └── json_exporter.h    # JSON serialization
-├── src/                   # Implementation files
-│   ├── codemap_types.cpp  # Core types implementation
-│   └── json_exporter.cpp  # JSON export/import
-├── tests/                 # Unit tests (PROTECTED TESTS)
-│   ├── test_codemap_types.cpp
-│   └── test_json_exporter.cpp
-├── .github/               # GitHub Actions workflows
+your-project/
+├── include/                # Contract headers (PROTECTED)
+│   └── *.h                # Your interfaces and data structures
+├── src/                   # Implementation files (MODIFIABLE)
+│   └── *.cpp             # Your actual code
+├── tests/                 # Test files (PROTECTED)
+│   └── test_*.cpp        # Your test suites
+├── .github/               
 │   └── workflows/
-│       └── protect-contracts.yml
-├── CMakeLists.txt        # Build configuration
-├── run_tests.bat         # Windows test runner
-├── run_tests.sh          # Linux/WSL test runner
-├── DEVELOPMENT_PLAN.md   # Development roadmap
-├── FILES.md              # Complete file index
-└── context.md            # Current project state
+│       └── protect-contracts.yml  # Automated protection
+├── DEVELOPMENT_PLAN.md    # The workflow process
+├── context.md            # Current project state
+├── FILES.md              # File index and structure
+└── SETUP.md              # Setup instructions
 ```
 
-## 🔒 Contract Protection
+## 🔒 Protection Mechanism
 
-This project uses a contract-first development approach:
-- **Header files** in `include/` are marked as `PROTECTED CONTRACT`
-- **Test files** in `tests/` are marked as `PROTECTED TEST`
-- GitHub Actions automatically blocks any changes to protected files
-- Only implementation files in `src/` can be modified
+### How It Works
 
-## 🏗️ Build Status
+1. Add `// PROTECTED CONTRACT` to header files you want to lock
+2. Add `// PROTECTED TEST` to test files you want to lock
+3. GitHub Actions will automatically:
+   - Check all commits and PRs
+   - Block changes to protected files
+   - Ensure only `src/` files can be modified
 
-### Automated CI/CD
-CodeMap uses GitHub Actions for automated builds and releases:
-- **Multi-platform builds**: Automatic Windows and Linux binaries on each release
-- **Contract protection**: Ensures interfaces remain stable
-- **Tested releases**: All builds run tests before packaging
+### Emergency Override
 
-### Current Status
+In exceptional cases, maintainers can temporarily disable protection:
+- Set repository secret `ALLOW_PROTECTED_EDITS` to `true`
+- Make necessary contract/test changes
+- Remove the secret to re-enable protection
+- See `docs/PROTECTION_OVERRIDE.md` for detailed instructions
 
-**v1.0.0** ✅ RELEASED - All phases complete!
-- Phase 1-7: All development phases successfully completed
-- 73 tests passing across all platforms
-- Production-ready with full feature set
+### Example Protected Contract
 
-## 📊 Usage
+```cpp
+// PROTECTED CONTRACT: Do not edit except with explicit approval
+#ifndef MY_INTERFACE_H
+#define MY_INTERFACE_H
 
-```bash
-# Analyze a C++ project
-./codemap /path/to/your/project
+class IMyService {
+public:
+    virtual bool process(const Data& input) = 0;
+    virtual Result getResult() const = 0;
+};
 
-# This will:
-# 1. Scan all source files
-# 2. Extract function definitions and calls
-# 3. Build the call graph
-# 4. Open interactive visualization
+#endif
 ```
 
-### Visual Indicators
+## 🤖 Working with AI Assistants
 
-The graph will use colors to highlight function status:
-- 🟢 **Green**: Fully implemented functions
-- 🟡 **Yellow**: Stub functions (TODO, NotImplemented)
-- 🔴 **Red**: Missing functions (called but not defined)
-- ⚫ **Grey**: External library calls
+This workflow is optimized for AI pair programming:
+
+### Best Practices
+
+1. **Share the context**: Always provide `context.md` to the AI
+2. **Reference the plan**: Point to `DEVELOPMENT_PLAN.md` for workflow
+3. **Be explicit about phases**: Tell the AI which step you're on
+4. **Protect early**: Lock contracts before extensive implementation
+5. **Test first**: Have AI write tests before implementation
+
+### Example AI Prompt
+
+```
+I'm using the contract-first development workflow. 
+Current context is in context.md.
+We're at Step 3 (implementing code).
+The contracts in include/ are protected and cannot be changed.
+Please implement the functions defined in include/my_service.h
+```
+
+## 📋 The 10-Step Workflow
+
+1. **Add/change contracts** → Define interfaces
+2. **Create tests** → Write tests against contracts  
+3. **Add/change code** → Implement functionality
+4. **Run tests** → Verify implementation
+5. **Address errors** → Fix implementation issues
+6. **Iterate** → Repeat until all tests pass
+7. **Push to GitHub** → Share your changes
+8. **Update documentation** → Keep docs current
+9. **Clear scratch** → Clean temporary files
+10. **Update context** → Record project state
+
+See `DEVELOPMENT_PLAN.md` for detailed workflow rules.
+
+## 🎯 When to Use This Workflow
+
+Perfect for:
+- New projects with AI assistance
+- Complex systems needing stable interfaces
+- Team projects requiring clear boundaries
+- Educational projects teaching good practices
+
+Not ideal for:
+- Rapid prototypes where everything changes
+- Single-file scripts
+- Projects without testing requirements
 
 ## 📖 Documentation
 
-- **[`README.md`](/mnt/c/dev/CodeMap/Repo/README.md)** - This file: project overview
-- **[`DEVELOPMENT_PLAN.md`](/mnt/c/dev/CodeMap/Repo/DEVELOPMENT_PLAN.md)** - Detailed development workflow and phases
-- **[`FILES.md`](/mnt/c/dev/CodeMap/Repo/FILES.md)** - Complete index of all project files
-- **[`context.md`](/mnt/c/dev/CodeMap/Repo/context.md)** - Current development state and progress
+- `SETUP.md` - How to configure for your project
+- `DEVELOPMENT_PLAN.md` - Detailed workflow explanation
+- `FILES.md` - Understanding the file structure
+- `context.md` - Template for tracking progress
 
 ## 🤝 Contributing
 
-This project follows strict contract protection:
-1. **Read all documentation first** - Start with [`context.md`](/mnt/c/dev/CodeMap/Repo/context.md) which lists required reading
-2. Contracts and tests are immutable once marked as protected
-3. Only implementations in `src/` can be modified
-4. All changes must pass existing tests
-5. See [`DEVELOPMENT_PLAN.md`](/mnt/c/dev/CodeMap/Repo/DEVELOPMENT_PLAN.md) for the full workflow
+This workflow template is open for improvements! 
+
+To contribute:
+1. Fork the repository
+2. Create a feature branch
+3. Make your improvements
+4. Ensure documentation is updated
+5. Submit a pull request
 
 ## 📄 License
 
-[License information to be added]
+[MIT License](LICENSE) - Use freely in your projects
 
-## 📧 Contact
+## 🙏 Acknowledgments
 
-Project repository: https://github.com/mugonmuydesk/CodeMap
+This workflow was developed through extensive real-world usage in production projects, proving its effectiveness for AI-assisted development.
+
+---
+
+*Ready to start? Check out `SETUP.md` for configuration instructions!*
